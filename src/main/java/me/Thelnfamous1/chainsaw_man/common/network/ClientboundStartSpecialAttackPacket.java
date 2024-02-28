@@ -8,31 +8,31 @@ import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class ClientboundSpecialAttackPacket {
+public class ClientboundStartSpecialAttackPacket {
     private final int id;
     private final CMSpecialAttack attack;
 
-    public ClientboundSpecialAttackPacket(Entity entity, CMSpecialAttack attack) {
+    public ClientboundStartSpecialAttackPacket(Entity entity, CMSpecialAttack attack) {
         this(entity.getId(), attack);
     }
 
-    private ClientboundSpecialAttackPacket(int entityId, CMSpecialAttack attack) {
+    private ClientboundStartSpecialAttackPacket(int entityId, CMSpecialAttack attack) {
         this.id = entityId;
         this.attack = attack;
     }
 
-    public static ClientboundSpecialAttackPacket decode(PacketBuffer packetBuffer) {
+    public static ClientboundStartSpecialAttackPacket decode(PacketBuffer packetBuffer) {
         int id = packetBuffer.readInt();
         CMSpecialAttack chainsawAttack = packetBuffer.readEnum(CMSpecialAttack.class);
-        return new ClientboundSpecialAttackPacket(id, chainsawAttack);
+        return new ClientboundStartSpecialAttackPacket(id, chainsawAttack);
     }
 
-    public static void encode(ClientboundSpecialAttackPacket packet, PacketBuffer packetBuffer) {
+    public static void encode(ClientboundStartSpecialAttackPacket packet, PacketBuffer packetBuffer) {
         packetBuffer.writeInt(packet.id);
         packetBuffer.writeEnum(packet.attack);
     }
 
-    public static void handle(ClientboundSpecialAttackPacket packet, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(ClientboundStartSpecialAttackPacket packet, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> ChainsawManModClient.getPacketHandler().handleSpecialAttackPacket(packet));
         ctx.get().setPacketHandled(true);
     }

@@ -41,9 +41,11 @@ public class ServerboundSpecialAttackPacket {
 
             LivingEntity activeMorphEntity = CMMorphHelper.getActiveMorphEntity(serverPlayer);
             if(activeMorphEntity != null && activeMorphEntity.getType() == ChainsawManMod.CHAINSAW_MAN.get()){
-                attackType.getChainsawAttack().accept(((ChainsawMan)activeMorphEntity));
-                if(packet.isUpdateClient())
-                    ChainsawManMod.NETWORK_CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> serverPlayer), new ClientboundSpecialAttackPacket(serverPlayer, packet.attack));
+                boolean applied = attackType.getExecution().apply(((ChainsawMan)activeMorphEntity), false);
+                if(!applied){
+                    ChainsawManMod.NETWORK_CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> serverPlayer), new ClientboundStopSpecialAttackPacket(serverPlayer));
+                } else if(packet.isUpdateClient())
+                    ChainsawManMod.NETWORK_CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> serverPlayer), new ClientboundStartSpecialAttackPacket(serverPlayer, packet.attack));
             }
         });
         ctx.get().setPacketHandled(true);

@@ -19,6 +19,6 @@ public class ChainsawManRenderer extends GeoEntityRenderer<ChainsawMan> {
 	public RenderType getRenderType(ChainsawMan animatable, float partialTicks, MatrixStack stack,
                                     IRenderTypeBuffer renderTypeBuffer, IVertexBuilder vertexBuilder, int packedLightIn,
                                     ResourceLocation textureLocation) {
-		return RenderType.entityTranslucent(this.getTextureLocation(animatable));
+		return RenderType.entityTranslucent(textureLocation);
 	}
 }

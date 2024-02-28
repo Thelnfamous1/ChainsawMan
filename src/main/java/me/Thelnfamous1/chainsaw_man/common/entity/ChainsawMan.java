@@ -11,6 +11,7 @@ import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.particles.BasicParticleType;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
@@ -73,7 +74,11 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
     }
 
     public boolean startAttack(ChainsawManAttackType attackType) {
-        if(!this.isAttackAnimationInProgress()){
+        return startAttack(attackType, false);
+    }
+
+    public boolean startAttack(ChainsawManAttackType attackType, boolean force) {
+        if(!this.isAttackAnimationInProgress() || force){
             this.setAttacking(true);
             this.setCurrentAttackType(attackType);
             this.onAttackStarted(this.getCurrentAttackType());
@@ -87,27 +92,31 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
     }
 
     protected void onAttackStarted(ChainsawManAttackType currentAttackType) {
+        //this.spawnSweepParticles(currentAttackType);
+        this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
+    }
+
+    private void spawnSweepParticles(ChainsawManAttackType currentAttackType) {
         double xOffset = -MathHelper.sin(this.yRot * CMUtil.DEG_TO_RAD);
         double zOffset = MathHelper.cos(this.yRot * CMUtil.DEG_TO_RAD);
         if (this.level instanceof ServerWorld) {
             switch (currentAttackType){
                 case RIGHT_SWIPE:
-                    this.sendSweepParticle(((ServerWorld) this.level), xOffset, zOffset);
+                    this.sendSweepParticle(((ServerWorld) this.level), ChainsawManMod.CHAINSAW_SWEEP_PARTICLE.get(), xOffset, zOffset);
                     break;
                 case LEFT_SWIPE:
-                    this.sendSweepParticle(((ServerWorld) this.level), xOffset, zOffset);
+                    this.sendSweepParticle(((ServerWorld) this.level), ChainsawManMod.CHAINSAW_SWEEP_PARTICLE.get(), xOffset, zOffset);
                     break;
                 case DUAL_SWIPE:
-                    this.sendSweepParticle(((ServerWorld) this.level), xOffset, zOffset);
-                    this.sendSweepParticle(((ServerWorld) this.level), xOffset, zOffset);
+                    this.sendSweepParticle(((ServerWorld) this.level), ChainsawManMod.CHAINSAW_SWEEP_PARTICLE.get(), xOffset, zOffset);
+                    this.sendSweepParticle(((ServerWorld) this.level), ChainsawManMod.CHAINSAW_SWEEP_PARTICLE.get(), xOffset, zOffset);
                     break;
             }
         }
-        this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
     }
 
-    private void sendSweepParticle(ServerWorld serverWorld, double xOffset, double zOffset) {
-        serverWorld.sendParticles(ChainsawManMod.CHAINSAW_SWEEP.get(),
+    private void sendSweepParticle(ServerWorld serverWorld, BasicParticleType particleType, double xOffset, double zOffset) {
+        serverWorld.sendParticles(particleType,
                 this.getX() + xOffset, this.getY(0.5D), this.getZ() + zOffset,
                 0,
                 xOffset, 0.0D, zOffset, 0.0D);
@@ -140,10 +149,14 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
                 this.attackTicker++;
                 if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("{} has attack ticker of {} for {}", this, this.attackTicker, currentAttackType.getKey());
             } else{
-                this.setCurrentAttackType(null);
-                this.setAttacking(false);
+                this.stopAttacking();
             }
         }
+    }
+
+    public void stopAttacking() {
+        this.setCurrentAttackType(null);
+        this.setAttacking(false);
     }
 
     protected void executeAttack(ChainsawManAttackType currentAttackType, AttackPoint currentAttackPoint){
@@ -156,7 +169,19 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
                     List<LivingEntity> targets = this.level.getNearbyEntities(LivingEntity.class, EntityPredicate.DEFAULT, this, attackBox);
                     targets.forEach(target -> this.morphDoHurtTarget(target, currentAttackPoint.getBaseDamageModifier()));
                 }
-                this.finalizeAreaOfEffectAttack(attackBox);
+                this.finalizeAreaOfEffectAttack(currentAttackType, attackBox);
+                break;
+            case VFX:
+                switch (currentAttackType){
+                    case RIGHT_SWIPE:
+                    case LEFT_SWIPE:
+                        this.spawnSweepParticles(currentAttackType);
+                        break;
+                    case DUAL_SWIPE:
+                        ChainsawSweep sweep = new ChainsawSweep(this.level, this);
+                        this.level.addFreshEntity(sweep);
+                        break;
+                }
                 break;
         }
     }
@@ -196,12 +221,14 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
         }
     }
 
-    protected void finalizeAreaOfEffectAttack(AxisAlignedBB attackBox) {
+    protected void finalizeAreaOfEffectAttack(ChainsawManAttackType currentAttackType, AxisAlignedBB attackBox) {
         if(!this.level.isClientSide){
+            /*
             Vector3d center = attackBox.getCenter();
             double radius = attackBox.getSize() * 0.5;
             Vector3d particlePos = center.subtract(0, (attackBox.getYsize() * 0.5D) - 0.5D, 0);
-            //CMUtil.spawnVanillaExplosionParticles(((ServerWorld) this.level), radius, particlePos);
+            CMUtil.spawnVanillaExplosionParticles(((ServerWorld) this.level), radius, particlePos);
+             */
         }
     }
 

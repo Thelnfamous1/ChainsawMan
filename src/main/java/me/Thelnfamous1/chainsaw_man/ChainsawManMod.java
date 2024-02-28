@@ -6,11 +6,9 @@ import me.Thelnfamous1.chainsaw_man.common.CMMorphHelper;
 import me.Thelnfamous1.chainsaw_man.common.ability.CMSpecialAttack;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawMan;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawManAttackType;
+import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawSweep;
 import me.Thelnfamous1.chainsaw_man.common.entity.FoxDevil;
-import me.Thelnfamous1.chainsaw_man.common.network.ClientboundSpecialAttackPacket;
-import me.Thelnfamous1.chainsaw_man.common.network.ServerboundAbilityPacket;
-import me.Thelnfamous1.chainsaw_man.common.network.ServerboundMorphPacket;
-import me.Thelnfamous1.chainsaw_man.common.network.ServerboundSpecialAttackPacket;
+import me.Thelnfamous1.chainsaw_man.common.network.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
@@ -38,6 +36,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -59,7 +58,8 @@ public class ChainsawManMod {
 
     private static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITIES, MODID);
 
-    public static final RegistryObject<EntityType<FoxDevil>> FOX_DEVIL = registerEntityType("fox_devil", EntityType.Builder.<FoxDevil>of(FoxDevil::new, EntityClassification.MISC)
+    public static final RegistryObject<EntityType<FoxDevil>> FOX_DEVIL = registerEntityType("fox_devil",
+            EntityType.Builder.<FoxDevil>of(FoxDevil::new, EntityClassification.MISC)
             .sized(10.0F, 10.0F)
             .clientTrackingRange(6)
             .updateInterval(2));
@@ -69,9 +69,16 @@ public class ChainsawManMod {
                     .sized(0.6F, 1.8F + 0.5F)
                     .clientTrackingRange(8));
 
+    public static final RegistryObject<EntityType<ChainsawSweep>> CHAINSAW_SWEEP = registerEntityType("chainsaw_sweep",
+            EntityType.Builder.<ChainsawSweep>of(ChainsawSweep::new, EntityClassification.MISC)
+                    .fireImmune()
+                    .sized(2.0F, 2.0F)
+                    .clientTrackingRange(10)
+                    .updateInterval(Integer.MAX_VALUE));
+
     private static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, MODID);
 
-    public static final RegistryObject<BasicParticleType> CHAINSAW_SWEEP = PARTICLE_TYPES.register("chainsaw_sweep", () -> new BasicParticleType(true));
+    public static final RegistryObject<BasicParticleType> CHAINSAW_SWEEP_PARTICLE = PARTICLE_TYPES.register("chainsaw_sweep", () -> new BasicParticleType(true));
 
     public static final SimpleChannel NETWORK_CHANNEL = NetworkRegistry.ChannelBuilder.named(
                     new ResourceLocation(MODID, "network"))
@@ -94,17 +101,19 @@ public class ChainsawManMod {
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerLeftClickEmpty);
     }
 
+    // only called on client
     private void onPlayerLeftClickEmpty(PlayerInteractEvent.LeftClickEmpty event) {
         LivingEntity activeMorphEntity = CMMorphHelper.getActiveMorphEntity(event.getPlayer());
         if(activeMorphEntity != null && activeMorphEntity.getType() == CHAINSAW_MAN.get()){
             ChainsawMan chainsawMan = (ChainsawMan) activeMorphEntity;
             ChainsawManAttackType attackType = ChainsawManAttackType.byMainArm(event.getPlayer().getMainArm());
-            if(chainsawMan.startAttack(attackType)){
-                NETWORK_CHANNEL.sendToServer(new ServerboundSpecialAttackPacket(CMSpecialAttack.byAttackType(attackType), false));
+            if(!chainsawMan.isAttackAnimationInProgress() && event.getPlayer().level.isClientSide){
+                NETWORK_CHANNEL.sendToServer(new ServerboundSpecialAttackPacket(CMSpecialAttack.byAttackType(attackType), true));
             }
         }
     }
 
+    // called on client, then server
     private void onPlayerAttackEntity(AttackEntityEvent event) {
         LivingEntity activeMorphEntity = CMMorphHelper.getActiveMorphEntity(event.getPlayer());
         if(activeMorphEntity != null && activeMorphEntity.getType() == CHAINSAW_MAN.get()){
@@ -113,8 +122,8 @@ public class ChainsawManMod {
                 event.setCanceled(true);
             } else {
                 ChainsawManAttackType attackType = ChainsawManAttackType.byMainArm(event.getPlayer().getMainArm());
-                if(chainsawMan.startAttack(attackType) && event.getPlayer().level.isClientSide){
-                    NETWORK_CHANNEL.sendToServer(new ServerboundSpecialAttackPacket(CMSpecialAttack.byAttackType(attackType), false));
+                if(!event.getPlayer().level.isClientSide && chainsawMan.startAttack(attackType)){
+                    NETWORK_CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(event::getPlayer), new ClientboundStartSpecialAttackPacket(event.getPlayer(), CMSpecialAttack.byAttackType(attackType)));
                 }
             }
         }
@@ -209,10 +218,17 @@ public class ChainsawManMod {
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
         NETWORK_CHANNEL.registerMessage(
                 incrementAndGetPacketCounter(),
-                ClientboundSpecialAttackPacket.class,
-                ClientboundSpecialAttackPacket::encode,
-                ClientboundSpecialAttackPacket::decode,
-                ClientboundSpecialAttackPacket::handle,
+                ClientboundStartSpecialAttackPacket.class,
+                ClientboundStartSpecialAttackPacket::encode,
+                ClientboundStartSpecialAttackPacket::decode,
+                ClientboundStartSpecialAttackPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        NETWORK_CHANNEL.registerMessage(
+                incrementAndGetPacketCounter(),
+                ClientboundStopSpecialAttackPacket.class,
+                ClientboundStopSpecialAttackPacket::encode,
+                ClientboundStopSpecialAttackPacket::decode,
+                ClientboundStopSpecialAttackPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 

@@ -10,12 +10,15 @@ import java.util.Comparator;
 
 public enum ChainsawManAttackType implements AnimatedAttacker.AttackType {
     RIGHT_SWIPE(0, "right_swipe", ImmutableList.of(
+            AnimatedAttacker.AttackPoint.of(0.29F, 0, AnimatedAttacker.AttackPoint.DamageMode.VFX),
             AnimatedAttacker.AttackPoint.of(0.42F, 1, AnimatedAttacker.AttackPoint.DamageMode.MELEE)),
             CMUtil.secondsToTicks(1F)),
     LEFT_SWIPE(1, "left_swipe", ImmutableList.of(
+            AnimatedAttacker.AttackPoint.of(0.29F, 0, AnimatedAttacker.AttackPoint.DamageMode.VFX),
             AnimatedAttacker.AttackPoint.of(0.42F, 1, AnimatedAttacker.AttackPoint.DamageMode.MELEE)),
             CMUtil.secondsToTicks(1.25F)),
     DUAL_SWIPE(2, "dual_swipe", ImmutableList.of(
+            AnimatedAttacker.AttackPoint.of(0.42F, 0, AnimatedAttacker.AttackPoint.DamageMode.VFX),
             AnimatedAttacker.AttackPoint.of(0.63F, 1, AnimatedAttacker.AttackPoint.DamageMode.AREA_OF_EFFECT)),
             CMUtil.secondsToTicks(1.2917F));
 

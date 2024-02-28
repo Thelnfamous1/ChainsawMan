@@ -3,17 +3,15 @@ package me.Thelnfamous1.chainsaw_man.common.ability;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawMan;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawManAttackType;
 
-import java.util.function.Consumer;
-
 public enum CMSpecialAttack {
-    RIGHT_SWIPE(denji -> denji.startAttack(ChainsawManAttackType.RIGHT_SWIPE)),
-    LEFT_SWIPE(denji -> denji.startAttack(ChainsawManAttackType.LEFT_SWIPE)),
-    DUAL_SWIPE(denji -> denji.startAttack(ChainsawManAttackType.DUAL_SWIPE));
+    RIGHT_SWIPE((denji, force) -> denji.startAttack(ChainsawManAttackType.RIGHT_SWIPE, force)),
+    LEFT_SWIPE((denji, force) -> denji.startAttack(ChainsawManAttackType.LEFT_SWIPE, force)),
+    DUAL_SWIPE((denji, force) -> denji.startAttack(ChainsawManAttackType.DUAL_SWIPE, force));
 
-    private final Consumer<ChainsawMan> chainsawAttack;
+    private final SpecialAttackExecution execution;
 
-    CMSpecialAttack(Consumer<ChainsawMan> chainsawAttack){
-        this.chainsawAttack = chainsawAttack;
+    CMSpecialAttack(SpecialAttackExecution execution){
+        this.execution = execution;
     }
 
     public static CMSpecialAttack byAttackType(ChainsawManAttackType attackType){
@@ -29,7 +27,12 @@ public enum CMSpecialAttack {
         }
     }
 
-    public Consumer<ChainsawMan> getChainsawAttack() {
-        return this.chainsawAttack;
+    public SpecialAttackExecution getExecution() {
+        return this.execution;
+    }
+
+    @FunctionalInterface
+    public interface SpecialAttackExecution{
+        boolean apply(ChainsawMan chainsawMan, boolean force);
     }
 }
