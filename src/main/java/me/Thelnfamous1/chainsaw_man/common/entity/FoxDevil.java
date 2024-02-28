@@ -245,7 +245,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
             Vector3d center = attackBox.getCenter();
             double radius = attackBox.getSize() * 0.5;
             Vector3d particlePos = center.subtract(0, (attackBox.getYsize() * 0.5D) - 0.5D, 0);
-            CMUtil.spawnVanillaExplosionParticles(((ServerWorld) this.level), radius, particlePos);
+            //CMUtil.spawnVanillaExplosionParticles(((ServerWorld) this.level), radius, particlePos);
         }
     }
 

@@ -9,6 +9,9 @@ import me.Thelnfamous1.chainsaw_man.client.keymapping.handler.SummonFoxDevilHand
 import me.Thelnfamous1.chainsaw_man.client.network.CMClientPacketHandler;
 import me.Thelnfamous1.chainsaw_man.client.renderer.ChainsawManRenderer;
 import me.Thelnfamous1.chainsaw_man.client.renderer.FoxDevilRenderer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.SweepAttackParticle;
+import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -32,6 +35,9 @@ public class ChainsawManModClient {
         modEventBus.addListener((FMLClientSetupEvent event) -> {
             ChainsawManModClient.registerEntityRenderers();
             event.enqueueWork(ChainsawManModClient::registerKeyBindings);
+        });
+        modEventBus.addListener((ParticleFactoryRegisterEvent event) -> {
+            Minecraft.getInstance().particleEngine.register(ChainsawManMod.CHAINSAW_SWEEP.get(), SweepAttackParticle.Factory::new);
         });
     }
 

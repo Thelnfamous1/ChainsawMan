@@ -15,6 +15,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.particles.BasicParticleType;
+import net.minecraft.particles.ParticleType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.GameRules;
 import net.minecraftforge.api.distmarker.Dist;
@@ -67,6 +69,10 @@ public class ChainsawManMod {
                     .sized(0.6F, 1.8F + 0.5F)
                     .clientTrackingRange(8));
 
+    private static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, MODID);
+
+    public static final RegistryObject<BasicParticleType> CHAINSAW_SWEEP = PARTICLE_TYPES.register("chainsaw_sweep", () -> new BasicParticleType(true));
+
     public static final SimpleChannel NETWORK_CHANNEL = NetworkRegistry.ChannelBuilder.named(
                     new ResourceLocation(MODID, "network"))
             .clientAcceptedVersions("1"::equals)
@@ -79,6 +85,7 @@ public class ChainsawManMod {
     public ChainsawManMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ENTITY_TYPES.register(modEventBus);
+        PARTICLE_TYPES.register(modEventBus);
         if(FMLEnvironment.dist == Dist.CLIENT){
             ChainsawManModClient.init(modEventBus);
         }

@@ -16,6 +16,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -86,7 +87,30 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
     }
 
     protected void onAttackStarted(ChainsawManAttackType currentAttackType) {
+        double xOffset = -MathHelper.sin(this.yRot * CMUtil.DEG_TO_RAD);
+        double zOffset = MathHelper.cos(this.yRot * CMUtil.DEG_TO_RAD);
+        if (this.level instanceof ServerWorld) {
+            switch (currentAttackType){
+                case RIGHT_SWIPE:
+                    this.sendSweepParticle(((ServerWorld) this.level), xOffset, zOffset);
+                    break;
+                case LEFT_SWIPE:
+                    this.sendSweepParticle(((ServerWorld) this.level), xOffset, zOffset);
+                    break;
+                case DUAL_SWIPE:
+                    this.sendSweepParticle(((ServerWorld) this.level), xOffset, zOffset);
+                    this.sendSweepParticle(((ServerWorld) this.level), xOffset, zOffset);
+                    break;
+            }
+        }
         this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
+    }
+
+    private void sendSweepParticle(ServerWorld serverWorld, double xOffset, double zOffset) {
+        serverWorld.sendParticles(ChainsawManMod.CHAINSAW_SWEEP.get(),
+                this.getX() + xOffset, this.getY(0.5D), this.getZ() + zOffset,
+                0,
+                xOffset, 0.0D, zOffset, 0.0D);
     }
 
     @Override
