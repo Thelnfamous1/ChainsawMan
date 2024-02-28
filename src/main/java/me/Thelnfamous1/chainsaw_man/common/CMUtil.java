@@ -1,6 +1,5 @@
 package me.Thelnfamous1.chainsaw_man.common;
 
-import me.ichun.mods.morph.common.morph.MorphHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -38,7 +37,7 @@ public class CMUtil {
     }
 
     public static DamageSource getMorphDamageSource(LivingEntity living) {
-        UUID uuidOfPlayerForMorph = MorphHandler.INSTANCE.getUuidOfPlayerForMorph(living);
+        UUID uuidOfPlayerForMorph = CMMorphHelper.getUuidOfPlayerForMorph(living);
         DamageSource pSource;
         if(uuidOfPlayerForMorph != null){
             PlayerEntity player = living.level.getPlayerByUUID(uuidOfPlayerForMorph);
@@ -58,7 +57,7 @@ public class CMUtil {
     }
 
     public static LivingEntity getActiveEntity(ServerPlayerEntity serverPlayer) {
-        LivingEntity activeMorphEntity = MorphHandler.INSTANCE.getActiveMorphEntity(serverPlayer);
+        LivingEntity activeMorphEntity = CMMorphHelper.getActiveMorphEntity(serverPlayer);
         return activeMorphEntity != null ? activeMorphEntity : serverPlayer;
     }
 

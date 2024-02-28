@@ -2,6 +2,7 @@ package me.Thelnfamous1.chainsaw_man;
 
 import me.Thelnfamous1.chainsaw_man.client.ChainsawManModClient;
 import me.Thelnfamous1.chainsaw_man.client.keymapping.CMOptions;
+import me.Thelnfamous1.chainsaw_man.common.CMMorphHelper;
 import me.Thelnfamous1.chainsaw_man.common.ability.CMSpecialAttack;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawMan;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawManAttackType;
@@ -10,7 +11,6 @@ import me.Thelnfamous1.chainsaw_man.common.network.ClientboundSpecialAttackPacke
 import me.Thelnfamous1.chainsaw_man.common.network.ServerboundAbilityPacket;
 import me.Thelnfamous1.chainsaw_man.common.network.ServerboundMorphPacket;
 import me.Thelnfamous1.chainsaw_man.common.network.ServerboundSpecialAttackPacket;
-import me.ichun.mods.morph.common.morph.MorphHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
@@ -95,7 +95,7 @@ public class ChainsawManMod {
     }
 
     private void onPlayerLeftClickEmpty(PlayerInteractEvent.LeftClickEmpty event) {
-        LivingEntity activeMorphEntity = MorphHandler.INSTANCE.getActiveMorphEntity(event.getPlayer());
+        LivingEntity activeMorphEntity = CMMorphHelper.getActiveMorphEntity(event.getPlayer());
         if(activeMorphEntity != null && activeMorphEntity.getType() == CHAINSAW_MAN.get()){
             ChainsawMan chainsawMan = (ChainsawMan) activeMorphEntity;
             ChainsawManAttackType attackType = ChainsawManAttackType.byMainArm(event.getPlayer().getMainArm());
@@ -106,7 +106,7 @@ public class ChainsawManMod {
     }
 
     private void onPlayerAttackEntity(AttackEntityEvent event) {
-        LivingEntity activeMorphEntity = MorphHandler.INSTANCE.getActiveMorphEntity(event.getPlayer());
+        LivingEntity activeMorphEntity = CMMorphHelper.getActiveMorphEntity(event.getPlayer());
         if(activeMorphEntity != null && activeMorphEntity.getType() == CHAINSAW_MAN.get()){
             ChainsawMan chainsawMan = (ChainsawMan) activeMorphEntity;
             if(chainsawMan.isAttackAnimationInProgress()){
@@ -150,7 +150,7 @@ public class ChainsawManMod {
                 && !event.player.removed
                 && event.player.getId() > 0)
         {
-            LivingEntity activeMorphEntity = MorphHandler.INSTANCE.getActiveMorphEntity(event.player);
+            LivingEntity activeMorphEntity = CMMorphHelper.getActiveMorphEntity(event.player);
             if(activeMorphEntity != null && activeMorphEntity.getType() == CHAINSAW_MAN.get()){
                 ((ChainsawMan)activeMorphEntity).tickAnimatedAttack();
             }

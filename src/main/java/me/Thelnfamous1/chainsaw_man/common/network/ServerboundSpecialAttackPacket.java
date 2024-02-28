@@ -1,9 +1,9 @@
 package me.Thelnfamous1.chainsaw_man.common.network;
 
 import me.Thelnfamous1.chainsaw_man.ChainsawManMod;
+import me.Thelnfamous1.chainsaw_man.common.CMMorphHelper;
 import me.Thelnfamous1.chainsaw_man.common.ability.CMSpecialAttack;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawMan;
-import me.ichun.mods.morph.common.morph.MorphHandler;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
@@ -39,7 +39,7 @@ public class ServerboundSpecialAttackPacket {
 
             CMSpecialAttack attackType = packet.getAttack();
 
-            LivingEntity activeMorphEntity = MorphHandler.INSTANCE.getActiveMorphEntity(serverPlayer);
+            LivingEntity activeMorphEntity = CMMorphHelper.getActiveMorphEntity(serverPlayer);
             if(activeMorphEntity != null && activeMorphEntity.getType() == ChainsawManMod.CHAINSAW_MAN.get()){
                 attackType.getChainsawAttack().accept(((ChainsawMan)activeMorphEntity));
                 if(packet.isUpdateClient())

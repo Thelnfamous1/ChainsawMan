@@ -1,8 +1,8 @@
 package me.Thelnfamous1.chainsaw_man.common.network;
 
 import me.Thelnfamous1.chainsaw_man.ChainsawManMod;
+import me.Thelnfamous1.chainsaw_man.common.CMMorphHelper;
 import me.Thelnfamous1.chainsaw_man.common.ability.CMMorph;
-import me.ichun.mods.morph.common.morph.MorphHandler;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
@@ -35,10 +35,10 @@ public class ServerboundMorphPacket {
 
             CMMorph morph = packet.getMorph();
 
-            if(MorphHandler.INSTANCE.getMorphInfo(serverPlayer).isCurrentlyThisVariant(morph.getMorphVariant(world).thisVariant)){
-                MorphHandler.INSTANCE.demorph(serverPlayer);
+            if(CMMorphHelper.isCMMorphVariant(serverPlayer, world, morph)){
+                CMMorphHelper.demorph(serverPlayer);
             } else{
-                MorphHandler.INSTANCE.morphTo(serverPlayer, morph.getMorphVariant(world));
+                CMMorphHelper.morphTo(serverPlayer, world, morph);
             }
         });
         ctx.get().setPacketHandled(true);
