@@ -1,7 +1,7 @@
 package me.Thelnfamous1.chainsaw_man.common.network;
 
 import me.Thelnfamous1.chainsaw_man.client.ChainsawManModClient;
-import me.Thelnfamous1.chainsaw_man.common.ability.ChainsawAttack;
+import me.Thelnfamous1.chainsaw_man.common.ability.CMSpecialAttack;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -10,20 +10,20 @@ import java.util.function.Supplier;
 
 public class ClientboundSpecialAttackPacket {
     private final int id;
-    private final ChainsawAttack attack;
+    private final CMSpecialAttack attack;
 
-    public ClientboundSpecialAttackPacket(Entity entity, ChainsawAttack attack) {
+    public ClientboundSpecialAttackPacket(Entity entity, CMSpecialAttack attack) {
         this(entity.getId(), attack);
     }
 
-    private ClientboundSpecialAttackPacket(int entityId, ChainsawAttack attack) {
+    private ClientboundSpecialAttackPacket(int entityId, CMSpecialAttack attack) {
         this.id = entityId;
         this.attack = attack;
     }
 
     public static ClientboundSpecialAttackPacket decode(PacketBuffer packetBuffer) {
         int id = packetBuffer.readInt();
-        ChainsawAttack chainsawAttack = packetBuffer.readEnum(ChainsawAttack.class);
+        CMSpecialAttack chainsawAttack = packetBuffer.readEnum(CMSpecialAttack.class);
         return new ClientboundSpecialAttackPacket(id, chainsawAttack);
     }
 
@@ -41,7 +41,7 @@ public class ClientboundSpecialAttackPacket {
         return this.id;
     }
 
-    public ChainsawAttack getAttack() {
+    public CMSpecialAttack getAttack() {
         return this.attack;
     }
 }

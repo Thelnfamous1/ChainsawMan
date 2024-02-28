@@ -2,6 +2,7 @@ package me.Thelnfamous1.chainsaw_man.common.entity;
 
 import com.google.common.collect.ImmutableList;
 import me.Thelnfamous1.chainsaw_man.common.CMUtil;
+import net.minecraft.util.HandSide;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -45,6 +46,10 @@ public enum ChainsawManAttackType implements AnimatedAttacker.AttackType {
         }
 
         return null;
+    }
+
+    public static ChainsawManAttackType byMainArm(HandSide mainArm) {
+        return mainArm == HandSide.RIGHT ? RIGHT_SWIPE : LEFT_SWIPE;
     }
 
     @Override

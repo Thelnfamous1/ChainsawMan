@@ -33,9 +33,9 @@ import java.util.OptionalInt;
 public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<ChainsawManAttackType>, IAnimatable {
     protected static final DataParameter<OptionalInt> DATA_ATTACK_TYPE_ID = EntityDataManager.defineId(ChainsawMan.class, DataSerializers.OPTIONAL_UNSIGNED_INT);
     private static final DataParameter<Boolean> DATA_ATTACKING = EntityDataManager.defineId(ChainsawMan.class, DataSerializers.BOOLEAN);
-    private static final AnimationBuilder RIGHT_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack");
-    private static final AnimationBuilder LEFT_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack2");
-    private static final AnimationBuilder DUAL_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack3");
+    private static final AnimationBuilder RIGHT_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack", false);
+    private static final AnimationBuilder LEFT_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack2", false);
+    private static final AnimationBuilder DUAL_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack3", false);
     private static final AnimationBuilder WALK_ANIM = new AnimationBuilder().addAnimation("animation.denji.walk", true);
     private static final AnimationBuilder IDLE_ANIM = new AnimationBuilder().addAnimation("animation.denji.idle", true);
 
@@ -114,7 +114,7 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
                     this.executeAttack(currentAttackType, currentAttackPoint);
                 }
                 this.attackTicker++;
-                if(FMLEnvironment.production) ChainsawManMod.LOGGER.info("{} has attack ticker of {} for {}", this, this.attackTicker, currentAttackType.getKey());
+                if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("{} has attack ticker of {} for {}", this, this.attackTicker, currentAttackType.getKey());
             } else{
                 this.setCurrentAttackType(null);
                 this.setAttacking(false);
@@ -126,7 +126,7 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
         this.playAttackSound(currentAttackType, currentAttackPoint);
         switch (currentAttackPoint.getDamageMode()){
             case AREA_OF_EFFECT:
-                AxisAlignedBB attackBox = AOEAttackHelper.createAttackBox(this, this.getAttackRadius(currentAttackType), this.xRot , this.getYHeadRot());
+                AxisAlignedBB attackBox = AOEAttackHelper.createAttackBox(this, this.getAttackRadii(currentAttackType), this.xRot, this.getYHeadRot());
                 if(!FMLEnvironment.production) AOEAttackHelper.sendHitboxParticles(attackBox, this.level);
                 if(!this.level.isClientSide){
                     List<LivingEntity> targets = this.level.getNearbyEntities(LivingEntity.class, EntityPredicate.DEFAULT, this, attackBox);
@@ -134,20 +134,14 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
                 }
                 this.finalizeAreaOfEffectAttack(attackBox);
                 break;
-            case MELEE:
         }
     }
 
     protected void playAttackSound(ChainsawManAttackType currentAttackType, AttackPoint currentAttackPoint) {
     }
 
-    protected Vector3d getAttackRadius(ChainsawManAttackType currentAttackType){
-        switch (currentAttackType){
-            case DUAL_SWIPE:
-                return new Vector3d(3, 3, 5);
-            default:
-                return new Vector3d(3, 3, 3);
-        }
+    protected Vector3d getAttackRadii(ChainsawManAttackType currentAttackType){
+        return new Vector3d(1.5, 1.5, 2.5);
     }
 
     protected void morphDoHurtTarget(Entity target, double baseDamageModifier){
@@ -205,14 +199,9 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
     }
 
     @Override
-    public boolean canRotateDuringAttack(ChainsawManAttackType currentAttackType) {
-        return false;
-    }
-
-    @Override
     public void registerControllers(AnimationData animationData) {
-        animationData.addAnimationController(new AnimationController<>(this, "Attack", 0, this::attack));
         animationData.addAnimationController(new AnimationController<>(this, "Move", 0, this::move));
+        animationData.addAnimationController(new AnimationController<>(this, "Attack", 0, this::attack));
     }
 
     private <E extends ChainsawMan> PlayState attack(AnimationEvent<E> event) {
@@ -230,6 +219,7 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
                     return PlayState.CONTINUE;
             }
         }
+        event.getController().clearAnimationCache();
         return PlayState.STOP;
     }
 

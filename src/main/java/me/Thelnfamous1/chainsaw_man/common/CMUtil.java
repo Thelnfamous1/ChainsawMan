@@ -1,15 +1,12 @@
 package me.Thelnfamous1.chainsaw_man.common;
 
 import me.ichun.mods.morph.common.morph.MorphHandler;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.particles.BasicParticleType;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
@@ -19,7 +16,6 @@ import java.util.UUID;
 public class CMUtil {
 
     public static final float DEG_TO_RAD = (float) (Math.PI / 180F);
-    public static final float ATTACK_VOLUME = 4.0F;
 
     public static int secondsToTicks(float seconds){
         return MathHelper.ceil(seconds * 20);
@@ -61,47 +57,33 @@ public class CMUtil {
         }
     }
 
-    public static void areaOfEffectAttack(double shiftScale, double inflateScale, LivingEntity attacker, float knockbackScale, float damageScale, BasicParticleType particleType, SoundEvent soundEvent, int count, float yShift){
-        float damage = (float) attacker.getAttributeValue(Attributes.ATTACK_DAMAGE);
-        float knockback = (float) attacker.getAttributeValue(Attributes.ATTACK_KNOCKBACK);
-        double xShift = (-MathHelper.sin(attacker.yBodyRot * ((float)Math.PI / 180F))) * shiftScale;
-        double zShift = MathHelper.cos(attacker.yBodyRot * ((float)Math.PI  / 180F)) * shiftScale;
-
-        UUID uuidOfPlayerForMorph = MorphHandler.INSTANCE.getUuidOfPlayerForMorph(attacker);
-        PlayerEntity player = null;
-        if(uuidOfPlayerForMorph != null){
-            player = attacker.level.getPlayerByUUID(uuidOfPlayerForMorph);
-        }
-
-        for(LivingEntity target : attacker.level.getEntitiesOfClass(LivingEntity.class, attacker.getBoundingBox().move(xShift, 0.0D, zShift).inflate(inflateScale, 0.25D, inflateScale))) {
-            if (target != attacker && target != player && !attacker.isAlliedTo(target) && (!(target instanceof ArmorStandEntity) || !((ArmorStandEntity) target).isMarker())) {
-                target.knockback(knockback * knockbackScale, MathHelper.sin(attacker.yRot * ((float)Math.PI / 180F)), -MathHelper.cos(attacker.yRot * ((float)Math.PI / 180F)));
-                DamageSource pSource = getMorphDamageSource(attacker);
-                target.hurt(pSource, damage * damageScale);
-            }
-        }
-        attacker.level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(), soundEvent, attacker.getSoundSource(), ATTACK_VOLUME, 1.0F);
-        areaOfEffectParticles(attacker, shiftScale, count, 0.0D, particleType, yShift);
-    }
-
-    private static void areaOfEffectParticles(LivingEntity entity, double shiftScale, int count, double speed, BasicParticleType particleType, double yShift) {
-        double xShift = -MathHelper.sin(entity.yRot * ((float)Math.PI / 180F)) * shiftScale;
-        double zShift = MathHelper.cos(entity.yRot * ((float)Math.PI / 180F)) * shiftScale;
-        if (entity.level instanceof ServerWorld) {
-            ((ServerWorld)entity.level).sendParticles(particleType,
-                    entity.getX() + xShift,
-                    entity.getY(0.5D) + yShift,
-                    entity.getZ() + zShift,
-                    count,
-                    xShift,
-                    0.0D,
-                    zShift,
-                    speed);
-        }
-    }
-
     public static LivingEntity getActiveEntity(ServerPlayerEntity serverPlayer) {
         LivingEntity activeMorphEntity = MorphHandler.INSTANCE.getActiveMorphEntity(serverPlayer);
         return activeMorphEntity != null ? activeMorphEntity : serverPlayer;
+    }
+
+    public static void rotateTowardsMovement(Entity pProjectile, float pRotationSpeed, Vector3d movement) {
+        if (movement.lengthSqr() != 0.0D) {
+            float f = MathHelper.sqrt(Entity.getHorizontalDistanceSqr(movement));
+            pProjectile.yRot = (float)(MathHelper.atan2(movement.z, movement.x) * (double)(180F / (float)Math.PI)) + 90.0F;
+
+            for(pProjectile.xRot = (float)(MathHelper.atan2(f, movement.y) * (double)(180F / (float)Math.PI)) - 90.0F; pProjectile.xRot - pProjectile.xRotO < -180.0F; pProjectile.xRotO -= 360.0F) {
+            }
+
+            while(pProjectile.xRot - pProjectile.xRotO >= 180.0F) {
+                pProjectile.xRotO += 360.0F;
+            }
+
+            while(pProjectile.yRot - pProjectile.yRotO < -180.0F) {
+                pProjectile.yRotO -= 360.0F;
+            }
+
+            while(pProjectile.yRot - pProjectile.yRotO >= 180.0F) {
+                pProjectile.yRotO += 360.0F;
+            }
+
+            pProjectile.xRot = MathHelper.lerp(pRotationSpeed, pProjectile.xRotO, pProjectile.xRot);
+            pProjectile.yRot = MathHelper.lerp(pRotationSpeed, pProjectile.yRotO, pProjectile.yRot);
+        }
     }
 }

@@ -2,7 +2,7 @@ package me.Thelnfamous1.chainsaw_man;
 
 import me.Thelnfamous1.chainsaw_man.client.ChainsawManModClient;
 import me.Thelnfamous1.chainsaw_man.client.keymapping.CMOptions;
-import me.Thelnfamous1.chainsaw_man.common.ability.ChainsawAttack;
+import me.Thelnfamous1.chainsaw_man.common.ability.CMSpecialAttack;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawMan;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawManAttackType;
 import me.Thelnfamous1.chainsaw_man.common.entity.FoxDevil;
@@ -15,7 +15,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.HandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.GameRules;
 import net.minecraftforge.api.distmarker.Dist;
@@ -92,8 +91,9 @@ public class ChainsawManMod {
         LivingEntity activeMorphEntity = MorphHandler.INSTANCE.getActiveMorphEntity(event.getPlayer());
         if(activeMorphEntity != null && activeMorphEntity.getType() == CHAINSAW_MAN.get()){
             ChainsawMan chainsawMan = (ChainsawMan) activeMorphEntity;
-            if(chainsawMan.startAttack(event.getPlayer().getMainArm() == HandSide.RIGHT ? ChainsawManAttackType.RIGHT_SWIPE : ChainsawManAttackType.LEFT_SWIPE)){
-                NETWORK_CHANNEL.sendToServer(new ServerboundSpecialAttackPacket(event.getPlayer().getMainArm() == HandSide.RIGHT ? ChainsawAttack.RIGHT_SWIPE : ChainsawAttack.LEFT_SWIPE));
+            ChainsawManAttackType attackType = ChainsawManAttackType.byMainArm(event.getPlayer().getMainArm());
+            if(chainsawMan.startAttack(attackType)){
+                NETWORK_CHANNEL.sendToServer(new ServerboundSpecialAttackPacket(CMSpecialAttack.byAttackType(attackType), false));
             }
         }
     }
@@ -104,8 +104,11 @@ public class ChainsawManMod {
             ChainsawMan chainsawMan = (ChainsawMan) activeMorphEntity;
             if(chainsawMan.isAttackAnimationInProgress()){
                 event.setCanceled(true);
-            } else{
-                chainsawMan.startAttack(event.getPlayer().getMainArm() == HandSide.RIGHT ? ChainsawManAttackType.RIGHT_SWIPE : ChainsawManAttackType.LEFT_SWIPE);
+            } else {
+                ChainsawManAttackType attackType = ChainsawManAttackType.byMainArm(event.getPlayer().getMainArm());
+                if(chainsawMan.startAttack(attackType) && event.getPlayer().level.isClientSide){
+                    NETWORK_CHANNEL.sendToServer(new ServerboundSpecialAttackPacket(CMSpecialAttack.byAttackType(attackType), false));
+                }
             }
         }
     }

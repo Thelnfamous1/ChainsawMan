@@ -2,6 +2,7 @@ package me.Thelnfamous1.chainsaw_man.common.entity;
 
 import me.Thelnfamous1.chainsaw_man.ChainsawManMod;
 import me.Thelnfamous1.chainsaw_man.common.AOEAttackHelper;
+import me.Thelnfamous1.chainsaw_man.common.CMUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPredicate;
 import net.minecraft.entity.EntityType;
@@ -50,6 +51,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
     private FoxDevilAttackType currentAttackType;
     private int attackTicker;
     private int life;
+    private int attackDelay;
 
     public FoxDevil(EntityType<? extends FoxDevil> type, World level) {
         super(type, level);
@@ -121,6 +123,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
     }
 
     protected void onAttackStarted(FoxDevilAttackType currentAttackType) {
+        this.playSound(SoundEvents.ENDER_DRAGON_GROWL, 1.0F, 1.0F);
     }
 
     @Override
@@ -135,16 +138,35 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
 
     @Override
     public void tick() {
+        /*
+        float oldXRot0 = this.xRotO;
+        float oldXRot = this.xRot;
+        float oldYRot0 = this.yRotO;
+        float oldYRot = this.yRot;
+         */
+        if(!this.isAttacking() || this.attackDelay > 0){
+            this.setDeltaMovement(Vector3d.ZERO);
+        }
         super.tick();
+        if(!this.isAttacking() || this.attackDelay > 0){
+            this.setDeltaMovement(Vector3d.ZERO);
+            CMUtil.rotateTowardsMovement(this, 1, new Vector3d(this.xPower, this.yPower, this.zPower));
+        }
+        if(this.attackDelay > 0){
+            this.attackDelay--;
+            if(this.attackDelay == 0 && !this.level.isClientSide){
+                this.startAttack(FoxDevilAttackType.BITE);
+            }
+        }
         this.tickAnimatedAttack();
-        if (!this.level.isClientSide) {
+        if (!this.level.isClientSide && this.attackDelay <= 0 && !this.isAttacking()) {
             this.tickDespawn();
         }
     }
 
     protected void tickDespawn() {
         ++this.life;
-        if (this.life >= 120) {
+        if (this.life >= 20) {
             this.remove();
             if(this.level instanceof ServerWorld){
                 ((ServerWorld)this.level).sendParticles(ParticleTypes.POOF,
@@ -166,7 +188,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
                     this.executeAttack(currentAttackType, currentAttackPoint);
                 }
                 this.attackTicker++;
-                if(FMLEnvironment.production) ChainsawManMod.LOGGER.info("{} has attack ticker of {} for {}", this, this.attackTicker, currentAttackType.getKey());
+                //if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("{} has attack ticker of {} for {}", this, this.attackTicker, currentAttackType.getKey());
             } else{
                 this.setCurrentAttackType(null);
                 this.setAttacking(false);
@@ -178,7 +200,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
         this.playAttackSound(currentAttackType, currentAttackPoint);
         switch (currentAttackPoint.getDamageMode()){
             case AREA_OF_EFFECT:
-                AxisAlignedBB attackBox = AOEAttackHelper.createAttackBox(this, this.getAttackRadius(currentAttackType), this.xRot , this.yRot);
+                AxisAlignedBB attackBox = AOEAttackHelper.createProjectileAttackBox(this, this.getAttackRadii(currentAttackType), new Vector3d(this.xPower, this.yPower, this.zPower));
                 if(!FMLEnvironment.production) AOEAttackHelper.sendHitboxParticles(attackBox, this.level);
                 if(!this.level.isClientSide){
                     Entity owner = this.getOwner();
@@ -193,11 +215,11 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
     }
 
     protected void playAttackSound(FoxDevilAttackType currentAttackType, AttackPoint currentAttackPoint) {
-        this.playSound(SoundEvents.FOX_BITE, 1.0F, 1.0F);
+        this.playSound(SoundEvents.PLAYER_ATTACK_STRONG, 1.0F, 1.0F);
     }
 
-    protected Vector3d getAttackRadius(FoxDevilAttackType currentAttackType){
-        return new Vector3d(10, 10, 10);
+    protected Vector3d getAttackRadii(FoxDevilAttackType currentAttackType){
+        return new Vector3d(5, 5, 5);
     }
 
     protected void doHurtTarget(Entity target, double damageModifier, @Nullable LivingEntity owner){
@@ -223,7 +245,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
             Vector3d center = attackBox.getCenter();
             double radius = attackBox.getSize() * 0.5;
             Vector3d particlePos = center.subtract(0, (attackBox.getYsize() * 0.5D) - 0.5D, 0);
-            //CMUtil.spawnVanillaExplosionParticles(((ServerWorld) this.level), radius, particlePos);
+            CMUtil.spawnVanillaExplosionParticles(((ServerWorld) this.level), radius, particlePos);
         }
     }
 
@@ -245,11 +267,6 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
     }
 
     @Override
-    public boolean canRotateDuringAttack(FoxDevilAttackType currentAttackType) {
-        return false;
-    }
-
-    @Override
     protected boolean shouldBurn() {
         return false;
     }
@@ -266,11 +283,14 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
         buffer.writeShort((int)(MathHelper.clamp(this.xPower, -3.9D, 3.9D) * 8000.0D));
         buffer.writeShort((int)(MathHelper.clamp(this.yPower, -3.9D, 3.9D) * 8000.0D));
         buffer.writeShort((int)(MathHelper.clamp(this.zPower, -3.9D, 3.9D) * 8000.0D));
+        /*
         FoxDevilAttackType currentAttackType = this.getCurrentAttackType();
         buffer.writeBoolean(currentAttackType != null);
         if(currentAttackType != null){
             buffer.writeEnum(currentAttackType);
         }
+         */
+        buffer.writeInt(this.attackDelay);
     }
 
     @Override
@@ -283,9 +303,12 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
         this.yPower = additionalData.readShort() / 8000.0D;
         this.zPower = additionalData.readShort() / 8000.0D;
 
+        /*
         if(additionalData.readBoolean()){
             this.startAttack(additionalData.readEnum(FoxDevilAttackType.class));
         }
+         */
+        this.attackDelay = additionalData.readInt();
     }
 
     @Override
@@ -294,7 +317,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
     }
 
     private <E extends FoxDevil> PlayState predicate(AnimationEvent<E> event) {
-        if (this.isAttacking()) {
+        if (this.isAttackAnimationInProgress()) {
             event.getController().setAnimation(ATTACK_ANIM);
         } else{
             event.getController().setAnimation(IDLE_ANIM);
@@ -305,5 +328,9 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
     @Override
     public AnimationFactory getFactory() {
         return this.factory;
+    }
+
+    public void setAttackDelay(int attackDelay) {
+        this.attackDelay = attackDelay;
     }
 }
