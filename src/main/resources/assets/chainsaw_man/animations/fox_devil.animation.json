@@ -1,0 +1,131 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.kon.attack": {
+			"loop": true,
+			"animation_length": 1.41667,
+			"bones": {
+				"body": {
+					"rotation": {
+						"0.0": {
+							"vector": [-62.5, 0, 0]
+						},
+						"0.5417": {
+							"vector": [-7.5, 0, 0]
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, -34.2, 52.1]
+						},
+						"0.5417": {
+							"vector": [0, -10.9, -15.9]
+						}
+					}
+				},
+				"mouth": {
+					"rotation": {
+						"0.0": {
+							"vector": [37.5, 0, 0]
+						},
+						"0.25": {
+							"vector": [45.19, 0, 0]
+						},
+						"0.5417": {
+							"vector": [0, 0, 0]
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, -7.6, 10.3]
+						},
+						"0.25": {
+							"vector": [0, 14.61, 5.55]
+						},
+						"0.5417": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"rightEar": {
+					"rotation": {
+						"0.0": {
+							"vector": [-27.5, 0, 0]
+						},
+						"0.3333": {
+							"vector": [-35, 0, 0]
+						},
+						"0.5": {
+							"vector": [37.5, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, -5, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"leftEar": {
+					"rotation": {
+						"0.0": {
+							"vector": [-27.5, 0, 0]
+						},
+						"0.3333": {
+							"vector": [-35, 0, 0]
+						},
+						"0.5": {
+							"vector": [37.5, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, -5, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.kon.idle": {
+			"loop": true,
+			"bones": {
+				"body": {
+					"rotation": {
+						"vector": ["1*math.cos(q.anim_time*50)", 0, 0]
+					},
+					"position": {
+						"vector": [0, "-14.5+1*math.cos(q.anim_time*50)", 0]
+					}
+				},
+				"rightEar": {
+					"rotation": {
+						"vector": ["-10+3*math.cos(q.anim_time*50)", 0, 0]
+					},
+					"position": {
+						"vector": [0, -3.1, 0]
+					}
+				},
+				"leftEar": {
+					"rotation": {
+						"vector": ["-10+3*math.cos(q.anim_time*50)", 0, 0]
+					},
+					"position": {
+						"vector": [0, -3.1, 0]
+					}
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}

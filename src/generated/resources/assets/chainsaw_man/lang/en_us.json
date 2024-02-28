@@ -1,0 +1,10 @@
+{
+  "entity.chainsaw_man.chainsaw_man": "Chainsaw Man",
+  "entity.chainsaw_man.fox_devil": "Fox Devil",
+  "gamerule.akifox": "Allow Fox Devil Summoning",
+  "gamerule.chainsawman": "Allow Chainsaw Man Morphing",
+  "key.chainsaw_man.attack_chainsaw_man": "Attack as Chainsaw Man",
+  "key.chainsaw_man.category": "Chainsaw Man",
+  "key.chainsaw_man.morph_chainsaw_man": "Morph into / Unmorph from Chainsaw Man",
+  "key.chainsaw_man.summon_fox_devil": "Summon Fox Devil"
+}

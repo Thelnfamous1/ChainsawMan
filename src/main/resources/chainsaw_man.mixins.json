@@ -1,9 +1,11 @@
 {
   "required": true,
-  "package": "${project.group}.mixin",
+  "package": "me.Thelnfamous1.chainsaw_man.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "${mod_id}.refmap.json",
   "mixins": [],
-  "client": [],
+  "client": [
+    "client.ClientPlayerEntityMixin"
+  ],
   "minVersion": "0.8"
 }
