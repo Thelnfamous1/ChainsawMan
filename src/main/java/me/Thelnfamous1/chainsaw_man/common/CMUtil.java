@@ -16,6 +16,18 @@ public class CMUtil {
 
     public static final float DEG_TO_RAD = (float) (Math.PI / 180F);
 
+    public static final float RAD_TO_DEG = (float) (180F / Math.PI);
+
+    public static Vector3d calculateViewVector(float xRot, float yRot) {
+        float f = xRot * ((float)Math.PI / 180F);
+        float f1 = -yRot * ((float)Math.PI / 180F);
+        float f2 = MathHelper.cos(f1);
+        float f3 = MathHelper.sin(f1);
+        float f4 = MathHelper.cos(f);
+        float f5 = MathHelper.sin(f);
+        return new Vector3d(f3 * f4, -f5, f2 * f4);
+    }
+
     public static int secondsToTicks(float seconds){
         return MathHelper.ceil(seconds * 20);
     }

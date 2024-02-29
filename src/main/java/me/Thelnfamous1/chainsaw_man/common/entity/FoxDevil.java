@@ -59,6 +59,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
 
     public FoxDevil(World world, LivingEntity owner, double xDist, double yDist, double zDist) {
         super(ChainsawManMod.FOX_DEVIL.get(), owner, xDist, yDist, zDist, world);
+        this.setRot(owner.yRot, 0);
     }
 
     @Override
@@ -144,11 +145,11 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
         float oldYRot0 = this.yRotO;
         float oldYRot = this.yRot;
          */
-        if(!this.isAttacking() || this.attackDelay > 0){
+        if(!this.isAttacking() && this.attackDelay <= 0){
             this.setDeltaMovement(Vector3d.ZERO);
         }
         super.tick();
-        if(!this.isAttacking() || this.attackDelay > 0){
+        if(!this.isAttacking() && this.attackDelay <= 0){
             this.setDeltaMovement(Vector3d.ZERO);
             CMUtil.rotateTowardsMovement(this, 1, new Vector3d(this.xPower, this.yPower, this.zPower));
         }
@@ -171,7 +172,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
             if(this.level instanceof ServerWorld){
                 ((ServerWorld)this.level).sendParticles(ParticleTypes.POOF,
                         this.getX(), this.getY(), this.getZ(),
-                        20,
+                        500,
                         this.getBbWidth() * 0.5F, this.getBbHeight() * 0.5F, this.getBbWidth() * 0.5F,
                         0.02D);
             }

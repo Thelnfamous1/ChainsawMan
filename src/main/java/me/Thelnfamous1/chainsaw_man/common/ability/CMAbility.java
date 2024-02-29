@@ -7,6 +7,7 @@ import me.Thelnfamous1.chainsaw_man.common.network.KeyBindAction;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.function.Consumer;
 
@@ -15,15 +16,24 @@ public enum CMAbility {
         if(!serverPlayer.level.getGameRules().getBoolean(ChainsawManMod.getRuleAkiFox())) return;
         LivingEntity activeEntity = CMUtil.getActiveEntity(serverPlayer);
         if(!activeEntity.level.isClientSide){
-            Vector3d startPos = activeEntity.getEyePosition(1.0F);
+            float verticalDist = ChainsawManMod.FOX_DEVIL.get().getHeight();
+            float horizontalDist = ChainsawManMod.FOX_DEVIL.get().getWidth() * 2;
+            Vector3d startPos = activeEntity.position().subtract(0, verticalDist, 0);
 
             double x = startPos.x;
             double y = startPos.y;
             double z = startPos.z;
-
-            Vector3d baseOffset = CMUtil.xYRotatedZVector(activeEntity.getBbWidth() * 0.5F, activeEntity.xRot, activeEntity.yRot);
-            Vector3d shootVec = activeEntity.getViewVector(1.0F).normalize().scale(10);
-            Vector3d targetVec = startPos.add(baseOffset).add(shootVec);
+            float xRot = (float) -Math.atan2(verticalDist, horizontalDist) * CMUtil.RAD_TO_DEG;
+            if(!FMLEnvironment.production){
+                ChainsawManMod.LOGGER.info("Trajectory xRot is {}", xRot);
+            }
+            Vector3d shootVec = CMUtil.calculateViewVector(xRot, activeEntity.getViewYRot(1.0F))
+                    .normalize()
+                    .scale(Math.hypot(horizontalDist, verticalDist));
+            if(!FMLEnvironment.production){
+                ChainsawManMod.LOGGER.info("Shoot vector has length {}. Vertical length of {}, horizontal Length of {}", shootVec.length(), shootVec.multiply(0, 1, 0).length(), shootVec.multiply(1, 0, 1).length());
+            }
+            Vector3d targetVec = startPos.add(shootVec);
             double targetX = targetVec.x;
             double targetY = targetVec.y;
             double targetZ = targetVec.z;
@@ -32,6 +42,9 @@ public enum CMAbility {
             double yDist = targetY - y;
             double zDist = targetZ - z;
             FoxDevil foxDevil = new FoxDevil(activeEntity.level, serverPlayer, xDist, yDist, zDist);
+            if(!FMLEnvironment.production){
+                ChainsawManMod.LOGGER.info("Spawned FoxDevil with power ({}, {}, {})", foxDevil.xPower, foxDevil.yPower, foxDevil.zPower);
+            }
             //foxDevil.startAttack(FoxDevilAttackType.BITE);
             foxDevil.setAttackDelay(20);
             foxDevil.setPosRaw(x, y, z);
