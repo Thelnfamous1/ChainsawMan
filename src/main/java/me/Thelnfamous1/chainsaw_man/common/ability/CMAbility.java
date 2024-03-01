@@ -3,6 +3,7 @@ package me.Thelnfamous1.chainsaw_man.common.ability;
 import me.Thelnfamous1.chainsaw_man.ChainsawManMod;
 import me.Thelnfamous1.chainsaw_man.common.CMUtil;
 import me.Thelnfamous1.chainsaw_man.common.entity.FoxDevil;
+import me.Thelnfamous1.chainsaw_man.common.entity.FoxDevilAttackType;
 import me.Thelnfamous1.chainsaw_man.common.network.KeyBindAction;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -27,11 +28,12 @@ public enum CMAbility {
             if(!FMLEnvironment.production){
                 ChainsawManMod.LOGGER.info("Trajectory xRot is {}", xRot);
             }
+            double hypot = Math.hypot(horizontalDist, verticalDist);
             Vector3d shootVec = CMUtil.calculateViewVector(xRot, activeEntity.getViewYRot(1.0F))
                     .normalize()
-                    .scale(Math.hypot(horizontalDist, verticalDist));
+                    .scale(hypot);
             if(!FMLEnvironment.production){
-                ChainsawManMod.LOGGER.info("Shoot vector has length {}. Vertical length of {}, horizontal Length of {}", shootVec.length(), shootVec.multiply(0, 1, 0).length(), shootVec.multiply(1, 0, 1).length());
+                ChainsawManMod.LOGGER.info("Shoot vector has length {}. Vertical length of {}, horizontal length of {}", shootVec.length(), shootVec.multiply(0, 1, 0).length(), shootVec.multiply(1, 0, 1).length());
             }
             Vector3d targetVec = startPos.add(shootVec);
             double targetX = targetVec.x;
@@ -42,11 +44,12 @@ public enum CMAbility {
             double yDist = targetY - y;
             double zDist = targetZ - z;
             FoxDevil foxDevil = new FoxDevil(activeEntity.level, serverPlayer, xDist, yDist, zDist);
+            foxDevil.setAttackDelay(20);
+            foxDevil.scaleStep(hypot / (foxDevil.getAttackDelay() + FoxDevilAttackType.BITE.getAttackDuration())); // hypot / (20 + 30 = 50 ticks total)
             if(!FMLEnvironment.production){
-                ChainsawManMod.LOGGER.info("Spawned FoxDevil with power ({}, {}, {})", foxDevil.xPower, foxDevil.yPower, foxDevil.zPower);
+                ChainsawManMod.LOGGER.info("Spawned FoxDevil with step ({}, {}, {})", foxDevil.xStep, foxDevil.yStep, foxDevil.zStep);
             }
             //foxDevil.startAttack(FoxDevilAttackType.BITE);
-            foxDevil.setAttackDelay(20);
             foxDevil.setPosRaw(x, y, z);
             activeEntity.level.addFreshEntity(foxDevil);
         }

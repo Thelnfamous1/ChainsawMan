@@ -7,7 +7,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPredicate;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.DamagingProjectileEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.PacketBuffer;
@@ -19,11 +18,9 @@ import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.network.NetworkHooks;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -39,7 +36,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.OptionalInt;
 
-public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditionalSpawnData, IAnimatable, AnimatedAttacker<FoxDevilAttackType> {
+public class FoxDevil extends ConstantVelocityProjectile implements IAnimatable, AnimatedAttacker<FoxDevilAttackType> {
     protected static final DataParameter<OptionalInt> DATA_ATTACK_TYPE_ID = EntityDataManager.defineId(FoxDevil.class, DataSerializers.OPTIONAL_UNSIGNED_INT);
 
     private static final DataParameter<Boolean> DATA_ATTACKING = EntityDataManager.defineId(FoxDevil.class, DataSerializers.BOOLEAN);
@@ -60,6 +57,12 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
     public FoxDevil(World world, LivingEntity owner, double xDist, double yDist, double zDist) {
         super(ChainsawManMod.FOX_DEVIL.get(), owner, xDist, yDist, zDist, world);
         this.setRot(owner.yRot, 0);
+    }
+
+    public void scaleStep(double scale){
+        this.xStep *= scale;
+        this.yStep *= scale;
+        this.zStep *= scale;
     }
 
     @Override
@@ -151,7 +154,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
         super.tick();
         if(!this.isAttacking() && this.attackDelay <= 0){
             this.setDeltaMovement(Vector3d.ZERO);
-            CMUtil.rotateTowardsMovement(this, 1, new Vector3d(this.xPower, this.yPower, this.zPower));
+            CMUtil.rotateTowardsMovement(this, 1, new Vector3d(this.xStep, this.yStep, this.zStep));
         }
         if(this.attackDelay > 0){
             this.attackDelay--;
@@ -201,7 +204,7 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
         this.playAttackSound(currentAttackType, currentAttackPoint);
         switch (currentAttackPoint.getDamageMode()){
             case AREA_OF_EFFECT:
-                AxisAlignedBB attackBox = AOEAttackHelper.createProjectileAttackBox(this, this.getAttackRadii(currentAttackType), new Vector3d(this.xPower, this.yPower, this.zPower));
+                AxisAlignedBB attackBox = AOEAttackHelper.createProjectileAttackBox(this, this.getAttackRadii(currentAttackType), new Vector3d(this.xStep, this.yStep, this.zStep));
                 if(!FMLEnvironment.production) AOEAttackHelper.sendHitboxParticles(attackBox, this.level);
                 if(!this.level.isClientSide){
                     Entity owner = this.getOwner();
@@ -268,47 +271,19 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
     }
 
     @Override
-    protected boolean shouldBurn() {
-        return false;
-    }
-
-    @Override
     public IPacket<?> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     @Override
     public void writeSpawnData(PacketBuffer buffer) {
-        Entity owner = this.getOwner();
-        buffer.writeInt(owner != null ? owner.getId() : 0);
-        buffer.writeShort((int)(MathHelper.clamp(this.xPower, -3.9D, 3.9D) * 8000.0D));
-        buffer.writeShort((int)(MathHelper.clamp(this.yPower, -3.9D, 3.9D) * 8000.0D));
-        buffer.writeShort((int)(MathHelper.clamp(this.zPower, -3.9D, 3.9D) * 8000.0D));
-        /*
-        FoxDevilAttackType currentAttackType = this.getCurrentAttackType();
-        buffer.writeBoolean(currentAttackType != null);
-        if(currentAttackType != null){
-            buffer.writeEnum(currentAttackType);
-        }
-         */
+        super.writeSpawnData(buffer);
         buffer.writeInt(this.attackDelay);
     }
 
     @Override
     public void readSpawnData(PacketBuffer additionalData) {
-        int ownerId = additionalData.readInt();
-        if(ownerId > 0){
-            this.setOwner(this.level.getEntity(ownerId));
-        }
-        this.xPower = additionalData.readShort() / 8000.0D;
-        this.yPower = additionalData.readShort() / 8000.0D;
-        this.zPower = additionalData.readShort() / 8000.0D;
-
-        /*
-        if(additionalData.readBoolean()){
-            this.startAttack(additionalData.readEnum(FoxDevilAttackType.class));
-        }
-         */
+        super.readSpawnData(additionalData);
         this.attackDelay = additionalData.readInt();
     }
 
@@ -333,5 +308,9 @@ public class FoxDevil extends DamagingProjectileEntity implements IEntityAdditio
 
     public void setAttackDelay(int attackDelay) {
         this.attackDelay = attackDelay;
+    }
+
+    public double getAttackDelay() {
+        return this.attackDelay;
     }
 }
