@@ -3,6 +3,7 @@ package me.Thelnfamous1.chainsaw_man.common;
 import me.Thelnfamous1.chainsaw_man.common.ability.CMMorph;
 import me.ichun.mods.morph.api.morph.MorphVariant;
 import me.ichun.mods.morph.common.morph.MorphHandler;
+import net.minecraft.entity.EntityPredicate;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -35,5 +36,12 @@ public class CMMorphHelper {
     @Nullable
     public static UUID getUuidOfPlayerForMorph(LivingEntity living) {
         return MorphHandler.INSTANCE.getUuidOfPlayerForMorph(living);
+    }
+
+    public static EntityPredicate getMorphAttackPredicate(LivingEntity entity) {
+        return (new EntityPredicate()).selector(target -> {
+            UUID uuidOfPlayerForMorph = getUuidOfPlayerForMorph(entity);
+            return uuidOfPlayerForMorph == null || !uuidOfPlayerForMorph.equals(target.getUUID());
+        });
     }
 }

@@ -12,24 +12,26 @@ public class AOEAttackHelper {
     public static final Vector3f WHITE = new Vector3f(Vector3d.fromRGB24(16777215));
     public static final RedstoneParticleData HITBOX_CORNER_PARTICLE = new RedstoneParticleData(WHITE.x(), WHITE.y(), WHITE.z(), 2.0F);
 
-    public static AxisAlignedBB createProjectileAttackBox(Entity entity, Vector3d attackRadii, Vector3d movement) {
-        Vector3d baseOffset = movement.normalize().scale(entity.getBbWidth() * 0.5F);
-        Vector3d attackOffset = movement.normalize().scale(attackRadii.z());
+    public static AxisAlignedBB createAttackBox(Entity entity, Vector3d attackRadii) {
         return AxisAlignedBB.ofSize(attackRadii.x() * 2, attackRadii.y() * 2, attackRadii.z() * 2)
                 .move(entity.position()
-                        .add(0, attackRadii.y(), 0)
-                        .add(baseOffset)
+                        .add(0, attackRadii.y(), 0));
+    }
+
+    public static AxisAlignedBB createAttackBox(Entity entity, Vector3d attackRadii, Vector3d movement) {
+        Vector3d baseOffset = movement.normalize().scale(entity.getBbWidth() * 0.5F);
+        Vector3d attackOffset = movement.normalize().scale(attackRadii.z());
+        return createAttackBox(entity, attackRadii)
+                .move(baseOffset
                         .add(attackOffset));
     }
 
     public static AxisAlignedBB createAttackBox(Entity entity, Vector3d attackRadii, float xRot, float yRot) {
         Vector3d baseOffset = CMUtil.xYRotatedZVector(entity.getBbWidth() * 0.5F, xRot, yRot);
         Vector3d attackOffset = CMUtil.xYRotatedZVector(attackRadii.z(), xRot, yRot);
-        return AxisAlignedBB.ofSize(attackRadii.x() * 2, attackRadii.y() * 2, attackRadii.z() * 2)
-                .move(entity.position()
-                        .add(0, attackRadii.y(), 0)
-                        .add(baseOffset)
-                        .add(attackOffset));
+        return createAttackBox(entity, attackRadii)
+                        .move(baseOffset
+                                .add(attackOffset));
     }
 
     public static void sendHitboxParticles(AxisAlignedBB attackBox, World level) {

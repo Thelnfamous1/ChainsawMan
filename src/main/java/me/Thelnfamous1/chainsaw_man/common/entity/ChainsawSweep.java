@@ -14,6 +14,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.network.NetworkHooks;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.manager.AnimationData;
@@ -25,6 +26,8 @@ import java.util.UUID;
 
 public class ChainsawSweep extends Entity implements IAnimatable, IEntityAdditionalSpawnData {
     private static final DataParameter<Integer> DATA_TEXTURE_ID = EntityDataManager.defineId(ChainsawSweep.class, DataSerializers.INT);
+    private static final DataParameter<Boolean> DATA_LEFT_HIDDEN = EntityDataManager.defineId(ChainsawSweep.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> DATA_RIGHT_HIDDEN = EntityDataManager.defineId(ChainsawSweep.class, DataSerializers.BOOLEAN);
     private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
     private int lifetime;
     private UUID ownerUUID;
@@ -64,13 +67,31 @@ public class ChainsawSweep extends Entity implements IAnimatable, IEntityAdditio
     @Override
     protected void defineSynchedData() {
         this.getEntityData().define(DATA_TEXTURE_ID, 0);
+        this.getEntityData().define(DATA_LEFT_HIDDEN, false);
+        this.getEntityData().define(DATA_RIGHT_HIDDEN, false);
+    }
 
+    public void setLeftHidden(boolean leftHidden){
+        this.entityData.set(DATA_LEFT_HIDDEN, leftHidden);
+    }
+
+    public boolean isLeftHidden(){
+        return this.entityData.get(DATA_LEFT_HIDDEN);
+    }
+
+    public void setRightHidden(boolean rightHidden){
+        this.entityData.set(DATA_RIGHT_HIDDEN, rightHidden);
+    }
+
+    public boolean isRightHidden(){
+        return this.entityData.get(DATA_RIGHT_HIDDEN);
     }
 
     @Override
     public void tick() {
         super.tick();
         Entity owner = this.getOwner();
+        if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("Left sweep is hidden ? {}, right sweep is hidden ? {}", this.isLeftHidden(), this.isRightHidden());
         if(owner != null){
             this.moveTo(owner.getX(), owner.getY(), owner.getZ(), owner.yRot, owner.xRot);
         }
@@ -141,14 +162,18 @@ public class ChainsawSweep extends Entity implements IAnimatable, IEntityAdditio
     @Override
     public void writeSpawnData(PacketBuffer buffer) {
         Entity owner = this.getOwner();
-        buffer.writeInt(owner != null ? owner.getId() : 0);
+        buffer.writeVarInt(owner != null ? owner.getId() : 0);
+        buffer.writeBoolean(this.isLeftHidden());
+        buffer.writeBoolean(this.isRightHidden());
     }
 
     @Override
     public void readSpawnData(PacketBuffer additionalData) {
-        int ownerId = additionalData.readInt();
+        int ownerId = additionalData.readVarInt();
         if(ownerId > 0){
             this.setOwner(this.level.getEntity(ownerId));
         }
+        this.setLeftHidden(additionalData.readBoolean());
+        this.setRightHidden(additionalData.readBoolean());
     }
 }

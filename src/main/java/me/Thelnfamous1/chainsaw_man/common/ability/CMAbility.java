@@ -44,8 +44,8 @@ public enum CMAbility {
             double yDist = targetY - y;
             double zDist = targetZ - z;
             FoxDevil foxDevil = new FoxDevil(activeEntity.level, serverPlayer, xDist, yDist, zDist);
-            foxDevil.setAttackDelay(20);
-            foxDevil.scaleStep(hypot / (foxDevil.getAttackDelay() + FoxDevilAttackType.BITE.getAttackDuration())); // hypot / (20 + 30 = 50 ticks total)
+            foxDevil.setAttackDelay(10);
+            foxDevil.scaleStep(hypot / (foxDevil.getAttackDelay() + FoxDevilAttackType.BITE.getAttackDuration())); // hypot / (10 + 30 = 40 ticks total)
             if(!FMLEnvironment.production){
                 ChainsawManMod.LOGGER.info("Spawned FoxDevil with step ({}, {}, {})", foxDevil.xStep, foxDevil.yStep, foxDevil.zStep);
             }

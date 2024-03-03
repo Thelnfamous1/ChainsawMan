@@ -3,6 +3,9 @@ package me.Thelnfamous1.chainsaw_man.client.renderer.model;
 import me.Thelnfamous1.chainsaw_man.ChainsawManMod;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawSweep;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
+import software.bernie.geckolib3.core.processor.IBone;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,5 +36,30 @@ public class ChainsawSweepModel extends CMProjectileModel<ChainsawSweep> {
     @Override
     protected String[] getBoneNames() {
         return BONE_NAMES;
+    }
+
+    @Override
+    public void setCustomAnimations(ChainsawSweep animatable, int instanceId, AnimationEvent animationEvent) {
+        super.setCustomAnimations(animatable, instanceId, animationEvent);
+        this.updatePartVisibility(animatable);
+    }
+
+    public void updatePartVisibility(ChainsawSweep entity){
+        IBone leftSweep = this.getBone("sweep2");
+        if(leftSweep != null){
+            boolean leftHidden = entity.isLeftHidden();
+            if(leftSweep.isHidden() != leftHidden){
+                if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("Setting left sweep hidden to {}", leftHidden);
+            }
+            leftSweep.setHidden(leftHidden);
+        }
+        IBone rightSweep = this.getBone("sweep");
+        if(rightSweep != null){
+            boolean rightHidden = entity.isRightHidden();
+            if(rightSweep.isHidden() != rightHidden){
+                if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("Setting right sweep hidden to {}", rightHidden);
+            }
+            rightSweep.setHidden(rightHidden);
+        }
     }
 }

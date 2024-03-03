@@ -2,6 +2,7 @@ package me.Thelnfamous1.chainsaw_man.common.entity;
 
 import me.Thelnfamous1.chainsaw_man.ChainsawManMod;
 import me.Thelnfamous1.chainsaw_man.common.AOEAttackHelper;
+import me.Thelnfamous1.chainsaw_man.common.CMMorphHelper;
 import me.Thelnfamous1.chainsaw_man.common.CMUtil;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
@@ -166,7 +167,7 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
                 AxisAlignedBB attackBox = AOEAttackHelper.createAttackBox(this, this.getAttackRadii(currentAttackType), this.xRot, this.getYHeadRot());
                 if(!FMLEnvironment.production) AOEAttackHelper.sendHitboxParticles(attackBox, this.level);
                 if(!this.level.isClientSide){
-                    List<LivingEntity> targets = this.level.getNearbyEntities(LivingEntity.class, EntityPredicate.DEFAULT, this, attackBox);
+                    List<LivingEntity> targets = this.level.getNearbyEntities(LivingEntity.class, CMMorphHelper.getMorphAttackPredicate(this), this, attackBox);
                     targets.forEach(target -> this.morphDoHurtTarget(target, currentAttackPoint.getBaseDamageModifier()));
                 }
                 this.finalizeAreaOfEffectAttack(currentAttackType, attackBox);
@@ -174,12 +175,18 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
             case VFX:
                 switch (currentAttackType){
                     case RIGHT_SWIPE:
+                        ChainsawSweep rightSweep = new ChainsawSweep(this.level, this);
+                        rightSweep.setLeftHidden(true);
+                        this.level.addFreshEntity(rightSweep);
+                        break;
                     case LEFT_SWIPE:
-                        this.spawnSweepParticles(currentAttackType);
+                        ChainsawSweep leftSweep = new ChainsawSweep(this.level, this);
+                        leftSweep.setRightHidden(true);
+                        this.level.addFreshEntity(leftSweep);
                         break;
                     case DUAL_SWIPE:
-                        ChainsawSweep sweep = new ChainsawSweep(this.level, this);
-                        this.level.addFreshEntity(sweep);
+                        ChainsawSweep dualSweep = new ChainsawSweep(this.level, this);
+                        this.level.addFreshEntity(dualSweep);
                         break;
                 }
                 break;

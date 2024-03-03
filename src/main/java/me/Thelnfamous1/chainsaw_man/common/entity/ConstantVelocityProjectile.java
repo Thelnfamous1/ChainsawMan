@@ -174,7 +174,7 @@ public abstract class ConstantVelocityProjectile extends ProjectileEntity implem
     @Override
     public void writeSpawnData(PacketBuffer buffer) {
         Entity owner = this.getOwner();
-        buffer.writeInt(owner != null ? owner.getId() : 0);
+        buffer.writeVarInt(owner != null ? owner.getId() : 0);
         buffer.writeShort((int)(MathHelper.clamp(this.xStep, -3.9D, 3.9D) * 8000.0D));
         buffer.writeShort((int)(MathHelper.clamp(this.yStep, -3.9D, 3.9D) * 8000.0D));
         buffer.writeShort((int)(MathHelper.clamp(this.zStep, -3.9D, 3.9D) * 8000.0D));
@@ -182,7 +182,7 @@ public abstract class ConstantVelocityProjectile extends ProjectileEntity implem
 
     @Override
     public void readSpawnData(PacketBuffer additionalData) {
-        int ownerId = additionalData.readInt();
+        int ownerId = additionalData.readVarInt();
         if(ownerId > 0){
             this.setOwner(this.level.getEntity(ownerId));
         }

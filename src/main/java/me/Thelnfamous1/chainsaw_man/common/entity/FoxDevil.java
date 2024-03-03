@@ -163,14 +163,14 @@ public class FoxDevil extends ConstantVelocityProjectile implements IAnimatable,
             }
         }
         this.tickAnimatedAttack();
-        if (!this.level.isClientSide && this.attackDelay <= 0 && !this.isAttacking()) {
+        if (this.attackDelay <= 0 && !this.isAttacking()) {
             this.tickDespawn();
         }
     }
 
     protected void tickDespawn() {
         ++this.life;
-        if (this.life >= 20) {
+        if (this.life >= 20 && !this.level.isClientSide) {
             this.remove();
             if(this.level instanceof ServerWorld){
                 ((ServerWorld)this.level).sendParticles(ParticleTypes.POOF,
@@ -204,7 +204,7 @@ public class FoxDevil extends ConstantVelocityProjectile implements IAnimatable,
         this.playAttackSound(currentAttackType, currentAttackPoint);
         switch (currentAttackPoint.getDamageMode()){
             case AREA_OF_EFFECT:
-                AxisAlignedBB attackBox = AOEAttackHelper.createProjectileAttackBox(this, this.getAttackRadii(currentAttackType), new Vector3d(this.xStep, this.yStep, this.zStep));
+                AxisAlignedBB attackBox = AOEAttackHelper.createAttackBox(this, this.getAttackRadii(currentAttackType));
                 if(!FMLEnvironment.production) AOEAttackHelper.sendHitboxParticles(attackBox, this.level);
                 if(!this.level.isClientSide){
                     Entity owner = this.getOwner();
@@ -278,13 +278,13 @@ public class FoxDevil extends ConstantVelocityProjectile implements IAnimatable,
     @Override
     public void writeSpawnData(PacketBuffer buffer) {
         super.writeSpawnData(buffer);
-        buffer.writeInt(this.attackDelay);
+        buffer.writeInt(this.getAttackDelay());
     }
 
     @Override
     public void readSpawnData(PacketBuffer additionalData) {
         super.readSpawnData(additionalData);
-        this.attackDelay = additionalData.readInt();
+        this.setAttackDelay(additionalData.readInt());
     }
 
     @Override
@@ -310,7 +310,11 @@ public class FoxDevil extends ConstantVelocityProjectile implements IAnimatable,
         this.attackDelay = attackDelay;
     }
 
-    public double getAttackDelay() {
+    public int getAttackDelay() {
         return this.attackDelay;
+    }
+
+    public int getLife() {
+        return this.life;
     }
 }
