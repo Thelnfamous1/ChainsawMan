@@ -140,7 +140,7 @@ public class ChainsawManMod {
         try {
             return (GameRules.RuleType<GameRules.BooleanValue>)create.invoke(null, defaultValue);
         } catch (Exception e) {
-            LOGGER.info("Failed to create game rule!");
+            LOGGER.error("Failed to create game rule!");
             return null;
         }
     }

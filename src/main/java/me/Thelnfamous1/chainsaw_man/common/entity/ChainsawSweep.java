@@ -1,6 +1,7 @@
 package me.Thelnfamous1.chainsaw_man.common.entity;
 
 import me.Thelnfamous1.chainsaw_man.ChainsawManMod;
+import me.Thelnfamous1.chainsaw_man.common.CMUtil;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -91,7 +92,7 @@ public class ChainsawSweep extends Entity implements IAnimatable, IEntityAdditio
     public void tick() {
         super.tick();
         Entity owner = this.getOwner();
-        if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("Left sweep is hidden ? {}, right sweep is hidden ? {}", this.isLeftHidden(), this.isRightHidden());
+        if(CMUtil.DEBUG_SWEEP_VFX && !FMLEnvironment.production) ChainsawManMod.LOGGER.info("Left sweep is hidden ? {}, right sweep is hidden ? {}", this.isLeftHidden(), this.isRightHidden());
         if(owner != null){
             this.moveTo(owner.getX(), owner.getY(), owner.getZ(), owner.yRot, owner.xRot);
         }

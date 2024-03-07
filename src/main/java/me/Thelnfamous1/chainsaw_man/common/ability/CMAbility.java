@@ -25,14 +25,14 @@ public enum CMAbility {
             double y = startPos.y;
             double z = startPos.z;
             float xRot = (float) -Math.atan2(verticalDist, horizontalDist) * CMUtil.RAD_TO_DEG;
-            if(!FMLEnvironment.production){
+            if(CMUtil.DEBUG_FOX_DEVIL && !FMLEnvironment.production){
                 ChainsawManMod.LOGGER.info("Trajectory xRot is {}", xRot);
             }
             double hypot = Math.hypot(horizontalDist, verticalDist);
             Vector3d shootVec = CMUtil.calculateViewVector(xRot, activeEntity.getViewYRot(1.0F))
                     .normalize()
                     .scale(hypot);
-            if(!FMLEnvironment.production){
+            if(CMUtil.DEBUG_FOX_DEVIL && !FMLEnvironment.production){
                 ChainsawManMod.LOGGER.info("Shoot vector has length {}. Vertical length of {}, horizontal length of {}", shootVec.length(), shootVec.multiply(0, 1, 0).length(), shootVec.multiply(1, 0, 1).length());
             }
             Vector3d targetVec = startPos.add(shootVec);
@@ -46,7 +46,7 @@ public enum CMAbility {
             FoxDevil foxDevil = new FoxDevil(activeEntity.level, serverPlayer, xDist, yDist, zDist);
             foxDevil.setAttackDelay(10);
             foxDevil.scaleStep(hypot / (foxDevil.getAttackDelay() + FoxDevilAttackType.BITE.getAttackDuration())); // hypot / (10 + 30 = 40 ticks total)
-            if(!FMLEnvironment.production){
+            if(CMUtil.DEBUG_FOX_DEVIL && !FMLEnvironment.production){
                 ChainsawManMod.LOGGER.info("Spawned FoxDevil with step ({}, {}, {})", foxDevil.xStep, foxDevil.yStep, foxDevil.zStep);
             }
             //foxDevil.startAttack(FoxDevilAttackType.BITE);

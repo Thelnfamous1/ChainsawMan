@@ -1,6 +1,7 @@
 package me.Thelnfamous1.chainsaw_man.client.renderer.model;
 
 import me.Thelnfamous1.chainsaw_man.ChainsawManMod;
+import me.Thelnfamous1.chainsaw_man.common.CMUtil;
 import me.Thelnfamous1.chainsaw_man.common.entity.ChainsawSweep;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -49,7 +50,7 @@ public class ChainsawSweepModel extends CMProjectileModel<ChainsawSweep> {
         if(leftSweep != null){
             boolean leftHidden = entity.isLeftHidden();
             if(leftSweep.isHidden() != leftHidden){
-                if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("Setting left sweep hidden to {}", leftHidden);
+                if(CMUtil.DEBUG_SWEEP_VFX && !FMLEnvironment.production) ChainsawManMod.LOGGER.info("Setting left sweep hidden to {}", leftHidden);
             }
             leftSweep.setHidden(leftHidden);
         }
@@ -57,7 +58,7 @@ public class ChainsawSweepModel extends CMProjectileModel<ChainsawSweep> {
         if(rightSweep != null){
             boolean rightHidden = entity.isRightHidden();
             if(rightSweep.isHidden() != rightHidden){
-                if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("Setting right sweep hidden to {}", rightHidden);
+                if(CMUtil.DEBUG_SWEEP_VFX && !FMLEnvironment.production) ChainsawManMod.LOGGER.info("Setting right sweep hidden to {}", rightHidden);
             }
             rightSweep.setHidden(rightHidden);
         }

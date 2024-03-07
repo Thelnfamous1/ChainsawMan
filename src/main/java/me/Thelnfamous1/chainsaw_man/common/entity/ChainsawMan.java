@@ -36,9 +36,9 @@ import java.util.OptionalInt;
 public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<ChainsawManAttackType>, IAnimatable {
     protected static final DataParameter<OptionalInt> DATA_ATTACK_TYPE_ID = EntityDataManager.defineId(ChainsawMan.class, DataSerializers.OPTIONAL_UNSIGNED_INT);
     private static final DataParameter<Boolean> DATA_ATTACKING = EntityDataManager.defineId(ChainsawMan.class, DataSerializers.BOOLEAN);
-    private static final AnimationBuilder RIGHT_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack", false);
-    private static final AnimationBuilder LEFT_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack2", false);
-    private static final AnimationBuilder DUAL_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack3", false);
+    private static final AnimationBuilder RIGHT_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack", true);
+    private static final AnimationBuilder LEFT_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack2", true);
+    private static final AnimationBuilder DUAL_SWIPE_ANIM = new AnimationBuilder().addAnimation("animation.denji.attack3", true);
     private static final AnimationBuilder WALK_ANIM = new AnimationBuilder().addAnimation("animation.denji.walk", true);
     private static final AnimationBuilder IDLE_ANIM = new AnimationBuilder().addAnimation("animation.denji.idle", true);
 
@@ -148,7 +148,7 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
                     this.executeAttack(currentAttackType, currentAttackPoint);
                 }
                 this.attackTicker++;
-                if(!FMLEnvironment.production) ChainsawManMod.LOGGER.info("{} has attack ticker of {} for {}", this, this.attackTicker, currentAttackType.getKey());
+                if(CMUtil.DEBUG_CHAINSAW_MAN && !FMLEnvironment.production) ChainsawManMod.LOGGER.info("{} has attack ticker of {} for {}", this, this.attackTicker, currentAttackType.getKey());
             } else{
                 this.stopAttacking();
             }
@@ -156,6 +156,7 @@ public class ChainsawMan extends CreatureEntity implements AnimatedAttacker<Chai
     }
 
     public void stopAttacking() {
+        if(CMUtil.DEBUG_CHAINSAW_MAN && !FMLEnvironment.production) ChainsawManMod.LOGGER.info("Stopping attack for {} with attack ticker of {} for {}", this, this.attackTicker, this.currentAttackType == null ? "null" : this.currentAttackType.getKey());
         this.setCurrentAttackType(null);
         this.setAttacking(false);
     }
